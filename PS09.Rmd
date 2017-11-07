@@ -1,6 +1,6 @@
 ---
 title: "STAT/MATH 495: Problem Set 09"
-author: "WRITE YOUR NAME(S) HERE"
+author: "Vickie Ip"
 date: "2017-11-07"
 output:
   html_document:
@@ -19,6 +19,7 @@ knitr::opts_chunk$set(
 set.seed(76)
 
 library(tidyverse)
+
 ```
 
 
@@ -28,7 +29,6 @@ library(tidyverse)
 Please indicate who you collaborated with on this assignment: 
 
 
-
 # Question 1: Run k-means
 
 ```{r}
@@ -36,9 +36,11 @@ observations_1 <- read_csv("data/observations_1.csv")
 observations_2 <- read_csv("data/observations_2.csv")
 
 # Set observations to be one of two datasets
-observations <- observations_2
-
+observations <- observations_1
+```
+```{r}
 # Fit model for k=2
+set.seed(1002)
 k <- 2
 k_means_results <- kmeans(observations, centers=k)
 clusters <- k_means_results$cluster
@@ -62,21 +64,22 @@ ggplot(NULL, aes(x=x1, y=x2, col=cluster)) +
 
 1. Run KMC 10 times on `observations_1` and comment on the consistency of the
 results.
-1. Speculate on the root cause of any consistency or inconsistency in the
+2. Speculate on the root cause of any consistency or inconsistency in the
 results.
-1. Run KMC 10 times on `observations_2` and comment on the consistentcy of the
+3. Run KMC 10 times on `observations_2` and comment on the consistency of the
 results.
-1. Speculate on the root cause of any consistency or inconsistency in the
+4. Speculate on the root cause of any consistency or inconsistency in the
 results.
 
 **Answers**:
 
-1.
-1.
-1.
-1.
+1. After running KMC 10 times, I noticed that in 5 out of the 10 times, the blue cluster was predicted to have a `x1` value of lower than 1.0 and vice versa. This shows that there's equal chance that the clusters can be predicted to have a `x1` value above or below 1.0. 
 
+2. This low consistency is because the points are quite close together and there is no clear distinction between one cluster to the other. Additionally, the random initialization of the centroid worsens the weak consistency.
 
+3. After running KMC 10 times on `observations_2`, I noticed that the predictive consistency is much higher for these observations as compared with `observations_1`. 8 out of the 10 times showed that the red cluster has a `x1` value of less than 1.0 which indicates strong predictive accuracy.
+
+4. The consistency is higher for `observations_2` because of how far apart the points are. There is a clearer distinction between one cluster from the other however there is still a bit of inconsistency because of the random initialization of the centroid.
 
 # Bonus question: Code your own
 
@@ -98,4 +101,65 @@ B <- data_frame(
 distance_matrix <- proxy::dist(x=A, y=B)
 distance_matrix
 apply(distance_matrix, 1, which.min)
+
+clusters <- rep(c(1,2), 100)
+obs2 <- observations_2
+tgt <- cbind(obs2, clusters)
+
+#calculate avg x and y coord for clusters 1 and 2 ) - this is in a for loop 100 times
+#save averages
+#for each point, calculate distance between each avg
 ```
+
+
+```{r}
+obs2 <- observations_2
+x1 <- observations_2$x1
+x2 <- observations_2$x2
+
+Spec = c(rep(1,50), rep(2,50), rep(3,50))
+
+#Randomly pick 2 centroids
+set.seed(200)
+x1_pt <- runif(2,range(x1)[1], range(x1)[2])
+set.seed(400)
+x2_pt <- runif(2, range(x2) [2], range(x2) [2])
+
+centroid = matrix(1:4, nrow=2)
+
+for( i in 1:2) { centroid[i,] = c(x2_pt[i], x1_pt[i])}
+
+#Calculate Distance
+calc_dist <- function(x,y) {return(sum((x-y) ^2))}
+
+distances <- rep(NA,2)
+assignments <- rep(NA, 100) -> assignments_new
+for (i in 1:100) {
+  for (j in 1:2) {
+    distances[j] = calc_dist(observations_2[i,],rev(centroid[j,]))
+  }
+  assignments[i] <- which.min(distances)
+}
+```
+```{r}
+#Re-calculate centroids and reassign clusters
+for(i in 1:2) {
+  centroid[i,1] <- mean(x2[which(assignments == i)])
+  centroid[i,2] <- mean(x1[which(assignments == i)])
+}
+
+for (i in 1:100) {
+  for (j in 1:2) {
+    distances[j] = calc_dist(observations_2[i,],rev(centroid[j,]))
+  }
+  assignments_new[i] <- which.min(distances)
+}
+
+plot(x1~x2, pch=16, ylab="x2", xlab="x1", col=assignments_new,
+     main="Clustering after final iteration")
+for(i in 1:2){points(centroid[i,1],centroid[i,2] , col=i, pch=17, cex=2)}
+for(i in 1:100){points(y=x1[i],x=x2[i],pch=4, col=Spec[i])}
+legend("topleft", c("Original Cluster", "K-Means assignment"),pch=c(4,16),bty="n")
+```
+
+
