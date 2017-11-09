@@ -73,11 +73,11 @@ results.
 
 **Answers**:
 
-1. After running KMC 10 times, I noticed that in 5 out of the 10 times, the blue cluster was predicted to have a `x1` value of lower than 1.0 and vice versa. This shows that there's equal chance that the clusters can be predicted to have a `x1` value above or below 1.0. 
+1. After running KMC 10 times, I noticed that in 5 out of the 10 times, the blue cluster was predicted to have a `x2` value of lower than 1.0 and vice versa. This shows that there's equal chance that the clusters can be predicted to have a `x2` value above or below 1.0. 
 
 2. This low consistency is because the points are quite close together and there is no clear distinction between one cluster to the other. Additionally, the random initialization of the centroid worsens the weak consistency.
 
-3. After running KMC 10 times on `observations_2`, I noticed that the predictive consistency is much higher for these observations as compared with `observations_1`. 8 out of the 10 times showed that the red cluster has a `x1` value of less than 1.0 which indicates strong predictive accuracy.
+3. After running KMC 10 times on `observations_2`, I noticed that the predictive consistency is much higher for these observations as compared with `observations_1`. 8 out of the 10 times showed that the red cluster has a `x2` value of less than 1.0 which indicates strong predictive accuracy.
 
 4. The consistency is higher for `observations_2` because of how far apart the points are. There is a clearer distinction between one cluster from the other however there is still a bit of inconsistency because of the random initialization of the centroid.
 
