@@ -19,14 +19,14 @@ knitr::opts_chunk$set(
 set.seed(76)
 
 library(tidyverse)
-
+library(cowplot)
 ```
 
 
 
 # Collaboration
 
-Please indicate who you collaborated with on this assignment: 
+Please indicate who you collaborated with on this assignment: I got help from Andrew Kim
 
 
 # Question 1: Run k-means
@@ -38,26 +38,43 @@ observations_2 <- read_csv("data/observations_2.csv")
 # Set observations to be one of two datasets
 observations <- observations_1
 ```
+
+# Observation 1 Results
+
 ```{r}
-# Fit model for k=2
+observations <- observations_1
+cluster_center_list <- list()
+mutated_observation_list <- list()
 set.seed(1002)
-k <- 2
-k_means_results <- kmeans(observations, centers=k)
-clusters <- k_means_results$cluster
-cluster_centers <- k_means_results$centers
+for (i in 1:10){
+  k <- 2
+  k_means_results <- kmeans(observations, centers = k)
+  clusters <- k_means_results$cluster
+  cluster_centers <- k_means_results$centers
+  
+  # Add cluster results to observations. Note we convert to factor since cluster
+  # ID's should be treated as categorical
+  dataframe <- data.frame(x1 = observations[,1], x2 = observations[,2], cluster = as.factor(clusters))
+  mutated_observation_list[[i]] <- dataframe
 
-# Add cluster results to observations. Note we convert to factor since cluster
-# ID's should be treated as categorical
-observations$cluster <- as.factor(clusters)
+  # Add cluster ID's to cluster_centers
+  cluster_centers <- cluster_centers %>% 
+    as_tibble() %>% 
+    mutate(cluster=as.factor(1:k))
+  cluster_center_list[[i]] <- cluster_centers
+}
 
-# Add cluster ID's to cluster_centers
-cluster_centers <- cluster_centers %>% 
-  as_tibble() %>% 
-  mutate(cluster=as.factor(1:k))
+plots <- list()
 
-ggplot(NULL, aes(x=x1, y=x2, col=cluster)) +
-  geom_point(data=observations) +
-  geom_point(data=cluster_centers, size=5)
+for (i in 1:10){
+  plot <- ggplot(NULL, aes(x=x1, y=x2, col=cluster)) +
+  geom_point(data=mutated_observation_list[[i]]) +
+  geom_point(data=cluster_center_list[[i]], size=5)
+  
+  plots[[i]] <- plot
+}
+
+cowplot::plot_grid(plotlist = plots, nrow = 5, ncol = 2)
 ```
 
 **Questions**:
@@ -66,6 +83,47 @@ ggplot(NULL, aes(x=x1, y=x2, col=cluster)) +
 results.
 2. Speculate on the root cause of any consistency or inconsistency in the
 results.
+
+# Observation 2 Results
+
+```{r}
+observations <- observations_1
+cluster_center_list <- list()
+mutated_observation_list <- list()
+set.seed(1002)
+for (i in 1:10){
+  k <- 2
+  k_means_results <- kmeans(observations, centers = k)
+  clusters <- k_means_results$cluster
+  cluster_centers <- k_means_results$centers
+  
+  # Add cluster results to observations. Note we convert to factor since cluster
+  # ID's should be treated as categorical
+  dataframe <- data.frame(x1 = observations[,1], x2 = observations[,2], cluster = as.factor(clusters))
+  mutated_observation_list[[i]] <- dataframe
+
+  # Add cluster ID's to cluster_centers
+  cluster_centers <- cluster_centers %>% 
+    as_tibble() %>% 
+    mutate(cluster=as.factor(1:k))
+  cluster_center_list[[i]] <- cluster_centers
+}
+
+plots <- list()
+
+for (i in 1:10){
+  plot <- ggplot(NULL, aes(x=x1, y=x2, col=cluster)) +
+  geom_point(data=mutated_observation_list[[i]]) +
+  geom_point(data=cluster_center_list[[i]], size=5)
+  
+  plots[[i]] <- plot
+}
+
+cowplot::plot_grid(plotlist = plots, nrow = 5, ncol = 2)
+```
+
+**Questions**:
+
 3. Run KMC 10 times on `observations_2` and comment on the consistency of the
 results.
 4. Speculate on the root cause of any consistency or inconsistency in the
@@ -75,11 +133,11 @@ results.
 
 1. After running KMC 10 times, I noticed that in 5 out of the 10 times, the blue cluster was predicted to have a `x2` value of lower than 1.0 and vice versa. This shows that there's equal chance that the clusters can be predicted to have a `x2` value above or below 1.0. 
 
-2. This low consistency is because the points are quite close together and there is no clear distinction between one cluster to the other. Additionally, the random initialization of the centroid worsens the weak consistency.
+2. This low consistency is because the points are quite close together and there is no clear distinction between one cluster to the other. The initialization of the centroid plays a more important part in determining the end result.
 
 3. After running KMC 10 times on `observations_2`, I noticed that the predictive consistency is much higher for these observations as compared with `observations_1`. 8 out of the 10 times showed that the red cluster has a `x2` value of less than 1.0 which indicates strong predictive accuracy.
 
-4. The consistency is higher for `observations_2` because of how far apart the points are. There is a clearer distinction between one cluster from the other however there is still a bit of inconsistency because of the random initialization of the centroid.
+4. The consistency is much higher for `observations_2` because there is a clearer distinction to which cluster the points belong to. The initialization of the centroid plays a less significant part in the end result because of how far apart the points are. 
 
 # Bonus question: Code your own
 
